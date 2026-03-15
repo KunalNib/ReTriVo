@@ -1,19 +1,30 @@
-import { useState } from 'react'
-import './App.css'
-import RAGNotebook from './RAGNotebook'
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import HomePage from './HomePage';
+import RAGNotebook from './RAGNotebook';
 
 function App() {
   return (
-    <>
-    <SignedOut>
-        <SignInButton />
-      </SignedOut>
-    <SignedIn>
-      <RAGNotebook/>
-    </SignedIn>
-    </>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/notebook"
+          element={
+            <>
+              <SignedIn>
+                <RAGNotebook />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
