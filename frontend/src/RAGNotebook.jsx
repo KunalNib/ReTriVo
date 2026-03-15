@@ -4,6 +4,7 @@ import axios from "axios";
 import { useClerk, useAuth } from "@clerk/clerk-react";
 
 export default function RAGNotebook() {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
   const { signOut } = useClerk();
@@ -58,7 +59,7 @@ export default function RAGNotebook() {
 
   async function fetchChats() {
     try {
-      const res = await axios.get("http://localhost:3000/api/chats", { headers: apiHeaders });
+      const res = await axios.get(`${backendUrl}/api/chats`, { headers: apiHeaders });
       setChats(res.data.chats || []);
     } catch (err) {
       console.error("Error fetching chats", err);
@@ -67,7 +68,7 @@ export default function RAGNotebook() {
 
   async function fetchChatMessages(chatId) {
     try {
-      const res = await axios.get(`http://localhost:3000/api/chats/${chatId}`, { headers: apiHeaders });
+      const res = await axios.get(`${backendUrl}/api/chats/${chatId}`, { headers: apiHeaders });
       if (res.data.messages) {
         setMessages(res.data.messages);
       }
@@ -78,7 +79,7 @@ export default function RAGNotebook() {
 
   async function fetchDocuments() {
     try {
-      const res = await axios.get("http://localhost:3000/api/documents", { headers: apiHeaders });
+      const res = await axios.get(`${backendUrl}/api/documents`, { headers: apiHeaders });
       setDocuments(res.data.documents || []);
     } catch (err) {
       console.error("Error fetching documents", err);
@@ -119,7 +120,7 @@ export default function RAGNotebook() {
 
     setIsUploading(true);
     try {
-      const res = await axios.post("http://localhost:3000/api/upload", formData, { headers: multipartHeaders });
+      const res = await axios.post(`${backendUrl}/api/upload`, formData, { headers: multipartHeaders });
       if (res.data.success) {
         alert(res.data.message);
         handleClearAll();
@@ -150,7 +151,7 @@ export default function RAGNotebook() {
         payload.chatId = currentChatId;
       }
 
-      const response = await axios.post("http://localhost:3000/api/chat", payload, { headers: apiHeaders });
+      const response = await axios.post(`${backendUrl}/api/chat`, payload, { headers: apiHeaders });
       
       if (response.data.error) {
         console.log(response.data.error);
