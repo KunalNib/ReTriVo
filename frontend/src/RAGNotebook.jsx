@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Upload, Trash2, Settings, Send, Plus, MessageSquare, FileText, Loader2, Menu, X } from "lucide-react";
 import axios from "axios";
 import { useClerk, useAuth } from "@clerk/clerk-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function RAGNotebook() {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
@@ -376,7 +378,15 @@ export default function RAGNotebook() {
                             : "bg-zinc-900/50 text-white border-white/5 rounded-tl-sm backdrop-blur-sm"
                         }`}
                     >
-                      {msg.content}
+                      {msg.role === "assistant" ? (
+                        <div className="prose prose-invert prose-sm sm:prose-base max-w-none break-words leading-relaxed">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.content
+                      )}
                     </div>
                   </div>
                 </div>
