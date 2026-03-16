@@ -32,7 +32,8 @@
 | **LangChain** | LLM Application Framework |
 | **Google Gemini 2.5 Flash** | Language Model |
 | **Google Text Embedding 004** | Vector Embeddings |
-| **Qdrant** | Vector Database |
+| **Turso (libSQL)** | SQL Database for App Data |
+| **Qdrant** | Vector Database for Embeddings |
 | **Multer** | File Upload Handling |
 | **pdf-parse** | PDF Text Extraction |
 
@@ -155,7 +156,6 @@ Ask a question about the uploaded content.
 RAG-CHATBOT/
 ├── backend/
 │   ├── index.js          # Express server & API routes
-│   ├── uploads/          # Uploaded PDF storage
 │   ├── package.json
 │   └── .env              # Backend environment variables
 │
@@ -197,6 +197,8 @@ The application features a modern dark-themed interface with:
 | `GOOGLE_API_KEY` | Your Google AI API key for Gemini & Embeddings |
 | `QDRANT_URL` | Qdrant Cloud cluster URL |
 | `QDRANT_API_KEY` | Qdrant API key for authentication |
+| `TURSO_DATABASE_URL` | Turso database URL for storing chat history and metadata |
+| `TURSO_AUTH_TOKEN` | Turso auth token for database access |
 
 ### Frontend (`.env`)
 
@@ -213,8 +215,7 @@ ReTriVo/
 ├── backend/
 │   ├── db.js            # Turso database connection & schema
 │   ├── index.js         # Main Express API and RAG logic
-│   ├── create-index.js  # Qdrant setup script
-│   └── uploads/         # Temporary local storage for PDF parsing
+│   └── create-index.js  # Qdrant setup script
 ├── frontend/
 │   ├── src/
 │   │   ├── main.jsx     # Root entry with Clerk Provider
