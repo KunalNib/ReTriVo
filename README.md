@@ -1,19 +1,4 @@
 # 📚 ReTriVo
-+
-+<div align="center">
-+
-+![ReTriVo](https://img.shields.io/badge/ReTriVo-6366f1?style=for-the-badge&logo=openai&logoColor=white)
-+![React](https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-+![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-+![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white)
-+![Google Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
-+
-+**A modern RAG (Retrieval-Augmented Generation) system that lets you chat with your PDF documents and text content using AI.**
-+
-+[Features](#-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [API Reference](#-api-reference) • [Project Structure](#-project-structure)
-+
-+</div>
-
 ---
 
 ## ✨ Features
@@ -190,48 +175,7 @@ RAG-CHATBOT/
 └── README.md
 ```
 
----
 
-## 🔧 How It Works
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        RAG PIPELINE                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  1. INGESTION                                                   │
-│     ┌──────────┐    ┌──────────────┐    ┌──────────────────┐   │
-│     │  PDF /   │───▶│  LangChain   │───▶│  Google Text     │   │
-│     │  Text    │    │  PDFLoader   │    │  Embedding-004   │   │
-│     └──────────┘    └──────────────┘    └────────┬─────────┘   │
-│                                                   │             │
-│                                                   ▼             │
-│                                          ┌──────────────────┐   │
-│                                          │  Qdrant Vector   │   │
-│                                          │  Database        │   │
-│                                          └────────┬─────────┘   │
-│                                                   │             │
-│  2. RETRIEVAL & GENERATION                        │             │
-│     ┌──────────┐    ┌──────────────┐              │             │
-│     │  User    │───▶│  Semantic    │◀─────────────┘             │
-│     │  Query   │    │  Search (k=3)│                            │
-│     └──────────┘    └──────┬───────┘                            │
-│                            │                                    │
-│                            ▼                                    │
-│                    ┌──────────────────┐    ┌──────────────────┐ │
-│                    │  Context +       │───▶│  Google Gemini   │ │
-│                    │  System Prompt   │    │  2.5 Flash       │ │
-│                    └──────────────────┘    └────────┬─────────┘ │
-│                                                      │          │
-│                                                      ▼          │
-│                                              ┌──────────────┐   │
-│                                              │  AI Response │   │
-│                                              └──────────────┘   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
 
 ## 🎨 Screenshots
 
@@ -327,20 +271,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the ISC License.
 
----
-
-## 🙏 Acknowledgements
-
-- [LangChain](https://www.langchain.com/) – for the amazing RAG framework
-- [Google AI](https://ai.google.dev/) – for Gemini LLM and embeddings
-- [Qdrant](https://qdrant.tech/) – for the vector database
-- [Clerk](https://clerk.com/) – for authentication
-- [Vite](https://vitejs.dev/) – for the blazing fast dev experience
-
----
-
-<div align="center">
-
-**Made with ❤️ by [Kunal](https://github.com/KunalNib)**
-
-</div>
