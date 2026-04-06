@@ -15,8 +15,8 @@ function GlobalLoader() {
     let reqCount = 0;
     
     const reqInterceptor = axios.interceptors.request.use((config) => {
-      // Bypass global loader for LLM chat messages so they only use local spinners
-      if (config.url && config.url.endsWith('/api/chat')) {
+      // Bypass global loader for LLM chat and chat list fetches since they have local spinners
+      if (config.url && (config.url.includes('/api/chat') || config.url.includes('/api/chats'))) {
         config.headers['x-bypass-loader'] = 'true';
         return config;
       }

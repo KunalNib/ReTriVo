@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Upload, Trash2, Settings, Send, Plus, MessageSquare, FileText, Loader2, Menu, X } from "lucide-react";
 import axios from "axios";
-import { useClerk, useAuth } from "@clerk/clerk-react";
+import { useClerk, useAuth, useUser } from "@clerk/clerk-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -11,6 +11,7 @@ export default function RAGNotebook() {
   const [text, setText] = useState("");
   const { signOut } = useClerk();
   const { userId } = useAuth();
+  const { user } = useUser();
   
   const [chats, setChats] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -29,6 +30,7 @@ export default function RAGNotebook() {
   ]);
   const [question, setQuestion] = useState("");
   const messagesEndRef = useRef(null);
+  const skipFetchRef = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -52,6 +54,10 @@ export default function RAGNotebook() {
 
   useEffect(() => {
     if (currentChatId) {
+      if (skipFetchRef.current) {
+        skipFetchRef.current = false;
+        return;
+      }
       fetchChatMessages(currentChatId);
     } else {
       setMessages([
@@ -174,6 +180,7 @@ export default function RAGNotebook() {
       ]);
 
       if (!currentChatId && response.data.chatId) {
+        skipFetchRef.current = true;
         setCurrentChatId(response.data.chatId);
         fetchChats(); // Refresh chat list
       }
@@ -250,12 +257,18 @@ export default function RAGNotebook() {
           </div>
         </div>
 
-        {/* Sidebar Footer (Optional Info) */}
+        {/* Sidebar Footer */}
         <div className="p-4 border-t border-white/5 flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center font-bold text-xs shrink-0">
-            {userId ? userId.substring(userId.length - 2).toUpperCase() : 'U'}
+          <div className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+            {user?.imageUrl ? (
+              <img src={user.imageUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span>{user?.firstName ? user.firstName[0].toUpperCase() : 'U'}</span>
+            )}
           </div>
-          <span className="text-xs font-medium text-zinc-600 truncate">User Session Active</span>
+          <span className="text-xs font-medium text-zinc-400 truncate">
+            {user?.fullName || user?.username || "User Session"}
+          </span>
         </div>
       </aside>
 
