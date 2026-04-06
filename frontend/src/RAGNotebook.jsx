@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Upload, Trash2, Settings, Send, Plus, MessageSquare, FileText, Loader2, Menu, X } from "lucide-react";
 import axios from "axios";
 import { useClerk, useAuth } from "@clerk/clerk-react";
@@ -28,6 +28,11 @@ export default function RAGNotebook() {
     },
   ]);
   const [question, setQuestion] = useState("");
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isSending]);
 
   const apiHeaders = {
     "Content-Type": "application/json",
@@ -35,7 +40,6 @@ export default function RAGNotebook() {
   };
 
   const multipartHeaders = {
-    "Content-Type": "multipart/form-data",
     "x-user-id": userId
   };
 
@@ -93,8 +97,13 @@ export default function RAGNotebook() {
     const selected = e.target.files[0];
     if (!selected) return;
 
-    if (selected.type !== "application/pdf") {
-      alert("Only PDF files are allowed");
+    const allowed = /\.(pdf|csv|xlsx|xls)$/i;
+    if (!allowed.test(selected.name) && 
+        selected.type !== "application/pdf" && 
+        selected.type !== "text/csv" &&
+        !selected.type.includes("spreadsheetml") && 
+        !selected.type.includes("excel")) {
+      alert("Only PDF, CSV, and Excel files are allowed");
       return;
     }
 
@@ -117,7 +126,7 @@ export default function RAGNotebook() {
     }
 
     const formData = new FormData();
-    if (file) formData.append("pdf", file);
+    if (file) formData.append("file", file);
     if (text) formData.append("text", text);
 
     setIsUploading(true);
@@ -279,10 +288,10 @@ export default function RAGNotebook() {
         </header>
 
         {/* Workspace */}
-        <main className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-4 md:gap-6 p-4 md:p-6 min-h-0 container mx-auto max-w-7xl overflow-y-auto md:overflow-hidden">
+        <main className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-3 md:gap-6 p-3 md:p-6 min-h-0 container mx-auto max-w-7xl overflow-y-auto md:overflow-hidden">
           
           {/* LEFT PANEL: KNOWLEDGE BASE CONTROLS */}
-          <section className="bg-zinc-950 rounded-xl border border-white/5 p-4 md:p-6 flex flex-col shadow-2xl min-h-[400px] md:min-h-0 md:overflow-hidden shrink-0">
+          <section className="bg-zinc-950 rounded-xl border border-white/5 p-3 sm:p-4 md:p-6 flex flex-col shadow-2xl min-h-[360px] md:min-h-0 md:overflow-hidden shrink-0">
             <div>
               <h2 className="font-bold text-lg text-white">Knowledge Base Builder</h2>
               <p className="text-sm text-zinc-600 mt-1">
@@ -290,15 +299,15 @@ export default function RAGNotebook() {
               </p>
             </div>
 
-            <div className="mt-6 flex gap-3">
-              <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-white/10 hover:bg-white text-white hover:text-black font-medium cursor-pointer transition-all duration-300">
-                <Upload size={18} /> <span className="font-semibold text-sm">Browse PDF</span>
-                <input type="file" accept="application/pdf" hidden onChange={handleFileChange} />
+            <div className="mt-4 md:mt-6 flex gap-3">
+              <label className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-white/10 hover:bg-white text-white hover:text-black font-medium cursor-pointer transition-all duration-300">
+                <Upload size={16} /> <span className="font-semibold text-sm">Browse Files</span>
+                <input type="file" accept=".pdf,.csv,.xlsx,.xls,application/pdf,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden onChange={handleFileChange} />
               </label>
 
               <button
                 onClick={handleClearAll}
-                className="px-4 py-3 rounded-xl border border-white/10 text-zinc-600 hover:text-white hover:border-white transition-all duration-300 shadow-sm"
+                className="px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-white/10 text-zinc-600 hover:text-white hover:border-white transition-all duration-300 shadow-sm"
                 title="Clear file and text"
               >
                 <Trash2 size={18} />
@@ -319,14 +328,14 @@ export default function RAGNotebook() {
               </div>
             )}
 
-            <div className="mt-6 flex-1 flex flex-col min-h-0">
+            <div className="mt-4 md:mt-6 flex-1 flex flex-col min-h-0">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-bold text-white text-xs uppercase tracking-widest">Raw Text Content</h3>
                 <span className="text-[10px] font-mono text-zinc-700 bg-white/5 px-2 py-0.5 rounded">{text.length || 0} chars</span>
               </div>
 
               <textarea
-                className="flex-1 w-full p-4 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-zinc-800 focus:outline-none focus:border-white transition-all duration-300 resize-none font-sans"
+                className="flex-1 w-full p-3 sm:p-4 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-zinc-800 focus:outline-none focus:border-white transition-all duration-300 resize-none font-sans min-h-[120px] md:min-h-0"
                 placeholder="Paste articles, notes, or any text here..."
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -336,7 +345,7 @@ export default function RAGNotebook() {
             <button
               onClick={handleUploadToKnowledgeBase}
               disabled={isUploading || (!file && !text.trim())}
-              className="mt-6 w-full bg-white text-black font-bold px-4 py-3.5 rounded-xl hover:bg-zinc-200 shadow-xl transition transform active:scale-[0.98] disabled:opacity-20 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+              className="mt-4 md:mt-6 w-full bg-white text-black font-bold px-4 py-3 sm:py-3.5 rounded-xl hover:bg-zinc-200 shadow-xl transition transform active:scale-[0.98] disabled:opacity-20 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-sm sm:text-base"
             >
               {isUploading ? (
                 <>
@@ -350,7 +359,7 @@ export default function RAGNotebook() {
           </section>
 
           {/* RIGHT PANEL: CHAT SESSION */}
-          <section className="bg-zinc-950 rounded-xl border border-white/5 p-0 flex flex-col shadow-2xl min-h-[500px] md:min-h-0 md:overflow-hidden shrink-0">
+          <section className="bg-zinc-950 rounded-xl border border-white/5 p-0 flex flex-col shadow-2xl min-h-[450px] md:min-h-0 md:overflow-hidden shrink-0">
             
             <div className="p-4 border-b border-white/5 bg-black/40 flex items-center justify-between">
               <div>
@@ -361,17 +370,17 @@ export default function RAGNotebook() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-8">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex gap-4 max-w-[90%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex gap-2 sm:gap-4 max-w-[92%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
                     
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg font-bold text-sm ${msg.role === 'user' ? 'bg-white text-black' : 'bg-zinc-900 text-white border border-white/10'}`}>
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg font-bold text-xs sm:text-sm ${msg.role === 'user' ? 'bg-white text-black' : 'bg-zinc-900 text-white border border-white/10'}`}>
                       {msg.role === 'user' ? 'U' : 'AI'}
                     </div>
 
                     <div
-                      className={`p-5 rounded-2xl text-[15px] leading-relaxed shadow-xl border
+                      className={`p-3 sm:p-5 rounded-2xl text-sm sm:text-[15px] leading-relaxed shadow-xl border
                         ${
                           msg.role === "user"
                             ? "bg-white text-black border-transparent font-medium rounded-tr-sm"
@@ -393,20 +402,21 @@ export default function RAGNotebook() {
               ))}
               {isSending && (
                 <div className="flex justify-start">
-                  <div className="flex gap-4 max-w-[90%] flex-row">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-zinc-900 text-white border border-white/10 shadow-lg font-bold text-sm">
+                  <div className="flex gap-2 sm:gap-4 max-w-[92%] flex-row">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 bg-zinc-900 text-white border border-white/10 shadow-lg font-bold text-xs sm:text-sm">
                       AI
                     </div>
-                    <div className="p-5 rounded-2xl text-[15px] leading-relaxed shadow-xl bg-zinc-900/50 text-white border-white/5 rounded-tl-sm flex items-center gap-3 backdrop-blur-sm">
+                    <div className="p-3 sm:p-5 rounded-2xl text-sm sm:text-[15px] leading-relaxed shadow-xl bg-zinc-900/50 text-white border-white/5 rounded-tl-sm flex items-center gap-3 backdrop-blur-sm">
                        <Loader2 size={16} className="animate-spin text-white" />
                        <span className="text-zinc-500 font-mono text-xs animate-pulse">Computing Inference...</span>
                     </div>
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
 
-            <div className="p-4 bg-black/40 border-t border-white/5 backdrop-blur-xl">
+            <div className="p-2.5 sm:p-4 bg-black/40 border-t border-white/5 backdrop-blur-xl">
               <div className="flex items-end gap-3 bg-zinc-900/50 border border-white/10 focus-within:border-white rounded-2xl p-2.5 transition-all duration-300 group">
                 <textarea
                   className="flex-1 bg-transparent px-3 py-2 text-sm text-white placeholder-zinc-700 focus:outline-none resize-none min-h-[44px] max-h-[150px] font-sans"
