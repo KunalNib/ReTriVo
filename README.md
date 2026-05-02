@@ -59,8 +59,8 @@
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/KunalNib/Rag-Chatbot.git
-cd RAG-CHATBOT
+git clone https://github.com/KunalNib/Rag-Chatbot.git ReTriVo
+cd ReTriVo
 ```
 
 #### 2. Setup Backend
@@ -155,32 +155,78 @@ Ask a question about the uploaded content.
 
 ---
 
+## 🏗 System Architecture
+
+The application implements a full GraphRAG architecture combining vector search with graph-based entity relationships for superior retrieval context.
+
+```mermaid
+graph TD
+    %% User Interaction
+    U[User] -->|Upload Document/URL| UI[ReTriVo UI]
+    U -->|Ask Question| UI
+    
+    %% UI to Backend
+    UI -->|API Request| API[Express API Gateway]
+    
+    %% Document Ingestion Flow
+    API -->|Document/Text/URL| Ingestion[Ingestion Service]
+    Ingestion --> PDF[pdf-parse / xlsx]
+    Ingestion --> YT[youtube-transcript]
+    
+    %% Processing & Embedding
+    PDF & YT --> Chunker[Text Chunker]
+    Chunker --> Embedder[Google Text Embedding 004]
+    Embedder --> VectorDB[(Qdrant Vector DB)]
+    
+    %% Graph Creation
+    Chunker --> LLM_Extract[Gemini 2.5 Flash]
+    LLM_Extract -->|Extract Entities & Relations| Neo4j[(Neo4j Graph DB)]
+    
+    %% Chat & Retrieval Flow
+    API -->|User Query| RAG[RAG Controller]
+    RAG --> MemDB[(Turso SQLite)]
+    RAG --> Embed_Query[Embed Query]
+    Embed_Query --> Vector_Search[Vector Search]
+    Vector_Search --> VectorDB
+    VectorDB -->|Similar Chunks| Context[Context Builder]
+    
+    %% Graph Retrieval
+    RAG --> Graph_Search[Graph Search]
+    Graph_Search --> Neo4j
+    Neo4j -->|Related Entities| Context
+    
+    %% Generation
+    Context --> LLM_Gen[Gemini 2.5 Flash]
+    MemDB -->|Chat History| LLM_Gen
+    LLM_Gen -->|Final Answer| API
+    API --> UI
+```
+
+---
+
 ## 📁 Project Structure
 
-```
-RAG-CHATBOT/
+```text
+ReTriVo/
 ├── backend/
-│   ├── index.js          # Express server & API routes
-│   ├── package.json
-│   └── .env              # Backend environment variables
+│   ├── index.js         # Main Express API and RAG logic
+│   ├── db.js            # Turso database connection & schema
+│   ├── services/        # Neo4j and GraphRAG services
+│   ├── controllers/     # API controllers for upload, document, chat
+│   ├── routes/          # Express route definitions
+│   └── .env             # Backend environment variables
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx           # Main app with auth routing
-│   │   ├── RAGNotebook.jsx   # Main RAG interface component
-│   │   ├── main.jsx          # App entry point with Clerk
-│   │   ├── App.css           # App styles
-│   │   └── index.css         # Global styles
-│   ├── public/
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── package.json
-│   └── .env              # Frontend environment variables
+│   │   ├── main.jsx        # Root entry with Clerk Provider
+│   │   ├── App.jsx         # Routing (Public Home vs Protected Notebook)
+│   │   ├── HomePage.jsx    # Marketing landing page
+│   │   └── RAGNotebook.jsx # Core application workspace
+│   ├── public/             # Static assets
+│   └── .env                # Frontend environment variables
 │
 └── README.md
 ```
-
-
 
 ## 🎨 Screenshots
 
@@ -213,28 +259,6 @@ The application features a modern dark-themed interface with:
 | Variable | Description |
 |----------|-------------|
 | `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key for auth |
-
----
-
-### 📁 7. Project Folder Structure
-
-```text
-ReTriVo/
-├── backend/
-│   ├── db.js            # Turso database connection & schema
-│   ├── index.js         # Main Express API and RAG logic
-│   ├── services/        # Neo4j and GraphRAG services
-│   ├── controllers/     # API controllers for upload, document, chat
-│   └── routes/          # Express route definitions
-├── frontend/
-│   ├── src/
-│   │   ├── main.jsx     # Root entry with Clerk Provider
-│   │   ├── App.jsx      # Routing (Public Home vs Protected Notebook)
-│   │   ├── HomePage.jsx # Marketing landing page
-│   │   └── RAGNotebook.jsx # Core application workspace
-│   └── public/          # Static assets
-└── .env                 # Global configuration (Secrets)
-```
 
 ---
 
