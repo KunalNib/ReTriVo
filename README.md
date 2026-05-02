@@ -3,9 +3,12 @@
 
 ## ✨ Features
 
-- 📄 **PDF Upload & Processing** – Upload PDF documents to build your personal knowledge base
+- 📄 **Multi-Document Upload** – Upload PDF, CSV, and XLSX documents to build your personal knowledge base
+- 🎥 **YouTube Integration** – Extract and index knowledge directly from YouTube video URLs
 - 📝 **Text Content Support** – Add custom text content as additional context
 - 🤖 **AI-Powered Chat** – Ask questions about your uploaded content using Google Gemini 2.5 Flash
+- 🧠 **Conversational Memory** – Remembers chat history for contextual AI responses
+- 📊 **GraphRAG Support** – Neo4j integration for complex entity relationships
 - 🔍 **Semantic Search** – Uses vector embeddings for intelligent content retrieval
 - 🔐 **Authentication** – Secure user authentication via Clerk
 - 🎨 **Modern UI** – Beautiful, responsive interface with dark mode and glassmorphism effects
@@ -32,10 +35,12 @@
 | **LangChain** | LLM Application Framework |
 | **Google Gemini 2.5 Flash** | Language Model |
 | **Google Text Embedding 004** | Vector Embeddings |
-| **Turso (libSQL)** | SQL Database for App Data |
+| **Neo4j** | Graph Database for Knowledge Graph |
+| **Turso (libSQL)** | SQL Database for App Data & Chat History |
 | **Qdrant** | Vector Database for Embeddings |
 | **Multer** | File Upload Handling |
-| **pdf-parse** | PDF Text Extraction |
+| **pdf-parse / xlsx** | File Parsing & Extraction |
+| **youtube-transcript** | YouTube Video Transcript Extraction |
 
 ---
 
@@ -199,6 +204,9 @@ The application features a modern dark-themed interface with:
 | `QDRANT_API_KEY` | Qdrant API key for authentication |
 | `TURSO_DATABASE_URL` | Turso database URL for storing chat history and metadata |
 | `TURSO_AUTH_TOKEN` | Turso auth token for database access |
+| `NEO4J_URI` | Neo4j AuraDB URI |
+| `NEO4J_USERNAME` | Neo4j AuraDB Username |
+| `NEO4J_PASSWORD` | Neo4j AuraDB Password |
 
 ### Frontend (`.env`)
 
@@ -215,7 +223,9 @@ ReTriVo/
 ├── backend/
 │   ├── db.js            # Turso database connection & schema
 │   ├── index.js         # Main Express API and RAG logic
-│   └── create-index.js  # Qdrant setup script
+│   ├── services/        # Neo4j and GraphRAG services
+│   ├── controllers/     # API controllers for upload, document, chat
+│   └── routes/          # Express route definitions
 ├── frontend/
 │   ├── src/
 │   │   ├── main.jsx     # Root entry with Clerk Provider

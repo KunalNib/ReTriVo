@@ -1,7 +1,9 @@
 import db from "../db.js";
 import { retrieveChunks } from "../services/vectorService.js";
-import { generateAnswer } from "../services/aiService.js";
+import { generateAnswer, rewriteQuery } from "../services/aiService.js";
 import { v4 as uuidv4 } from "uuid";
+import { getGraphStore, graphLlm } from "../services/graphService.js";
+import { GraphCypherQAChain } from "@langchain/community/chains/graph_qa/cypher";
 
 export async function chat(req, res) {
   try {
@@ -11,6 +13,7 @@ export async function chat(req, res) {
     const userQuery = req.body.question;
     let chatId = req.body.chatId;
 
+    let history = [];
     if (!chatId) {
       chatId = uuidv4();
       const title = userQuery.substring(0, 50) || "New Chat";
@@ -18,6 +21,13 @@ export async function chat(req, res) {
         sql: "INSERT INTO chats (id, userId, title) VALUES (?, ?, ?)",
         args: [chatId, userId, title],
       });
+    } else {
+      const historyResult = await db.execute({
+        sql: "SELECT role, content FROM messages WHERE chatId = ? ORDER BY createdAt DESC LIMIT 10",
+        args: [chatId],
+      });
+      // Reverse to get chronological order
+      history = historyResult.rows.reverse();
     }
 
     await db.execute({
@@ -25,8 +35,27 @@ export async function chat(req, res) {
       args: [uuidv4(), chatId, "user", userQuery],
     });
 
-    const chunks = await retrieveChunks(userQuery, userId);
-    const aiAnswer = await generateAnswer(userQuery, chunks);
+    const standaloneQuery = await rewriteQuery(userQuery, history);
+    console.log("Original Query:", userQuery, "| Standalone:", standaloneQuery);
+
+    const chunks = await retrieveChunks(standaloneQuery, userId);
+    
+    let graphFacts = "";
+    const graph = await getGraphStore();
+    if (graph) {
+      try {
+        const graphChain = GraphCypherQAChain.fromLLM({
+          llm: graphLlm,
+          graph: graph,
+        });
+        const graphRes = await graphChain.invoke({ query: standaloneQuery });
+        graphFacts = graphRes.result;
+      } catch (err) {
+        console.error("Graph query failed:", err.message);
+      }
+    }
+
+    const aiAnswer = await generateAnswer(userQuery, chunks, history, graphFacts);
 
     await db.execute({
       sql: "INSERT INTO messages (id, chatId, role, content) VALUES (?, ?, ?, ?)",

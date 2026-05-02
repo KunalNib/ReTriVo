@@ -9,6 +9,7 @@ export default function RAGNotebook() {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const { signOut } = useClerk();
   const { userId } = useAuth();
   const { user } = useUser();
@@ -119,6 +120,7 @@ export default function RAGNotebook() {
   function handleClearAll() {
     setFile(null);
     setText("");
+    setYoutubeUrl("");
   }
 
   function handleNewChat() {
@@ -126,14 +128,15 @@ export default function RAGNotebook() {
   }
 
   async function handleUploadToKnowledgeBase() {
-    if (!file && !text.trim()) {
-      alert("Please upload a PDF or add text content");
+    if (!file && !text.trim() && !youtubeUrl.trim()) {
+      alert("Please upload a PDF, add text content, or provide a YouTube URL");
       return;
     }
 
     const formData = new FormData();
     if (file) formData.append("file", file);
     if (text) formData.append("text", text);
+    if (youtubeUrl) formData.append("youtubeUrl", youtubeUrl);
 
     setIsUploading(true);
     try {
@@ -147,7 +150,11 @@ export default function RAGNotebook() {
       }
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      if (err.response && err.response.data && err.response.data.error) {
+        alert(`Error: ${err.response.data.error}`);
+      } else {
+        alert("Upload failed. Please check the server connection.");
+      }
     } finally {
       setIsUploading(false);
     }
@@ -341,6 +348,19 @@ export default function RAGNotebook() {
               </div>
             )}
 
+            <div className="mt-4 md:mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-bold text-white text-xs uppercase tracking-widest">YouTube Video</h3>
+              </div>
+              <input
+                type="text"
+                className="w-full p-3 sm:p-4 bg-black/40 border border-white/10 rounded-xl text-sm text-white placeholder-zinc-800 focus:outline-none focus:border-white transition-all duration-300 font-sans"
+                placeholder="Paste YouTube URL here..."
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+              />
+            </div>
+
             <div className="mt-4 md:mt-6 flex-1 flex flex-col min-h-0">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-bold text-white text-xs uppercase tracking-widest">Raw Text Content</h3>
@@ -357,7 +377,7 @@ export default function RAGNotebook() {
 
             <button
               onClick={handleUploadToKnowledgeBase}
-              disabled={isUploading || (!file && !text.trim())}
+              disabled={isUploading || (!file && !text.trim() && !youtubeUrl.trim())}
               className="mt-4 md:mt-6 w-full bg-white text-black font-bold px-4 py-3 sm:py-3.5 rounded-xl hover:bg-zinc-200 shadow-xl transition transform active:scale-[0.98] disabled:opacity-20 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-sm sm:text-base"
             >
               {isUploading ? (

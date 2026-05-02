@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 
 import { initDb } from "./db.js";
+
 import uploadRoutes from "./routes/uploadRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import chatHistoryRoutes from "./routes/chatHistoryRoutes.js";

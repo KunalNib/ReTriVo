@@ -4,3 +4,4 @@ uploads/
 database.sqlite
 database.sqlite-wal
 database.sqlite-shm
+Dockerfile
