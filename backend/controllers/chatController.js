@@ -4,6 +4,7 @@ import { generateAnswer, rewriteQuery } from "../services/aiService.js";
 import { v4 as uuidv4 } from "uuid";
 import { getGraphStore, graphLlm } from "../services/graphService.js";
 import { GraphCypherQAChain } from "@langchain/community/chains/graph_qa/cypher";
+import { PromptTemplate } from "@langchain/core/prompts";
 
 export async function chat(req, res) {
   try {
@@ -44,9 +45,23 @@ export async function chat(req, res) {
     const graph = await getGraphStore();
     if (graph) {
       try {
+        const cypherPrompt = PromptTemplate.fromTemplate(`Task: Generate Cypher statement to query a graph database.
+Instructions:
+Use only the provided relationship types and properties in the schema.
+Do not use any other relationship types or properties that are not provided.
+If you cannot generate a Cypher query based on the provided schema for the given question, you MUST output exactly: MATCH (n:__NOT_FOUND__) RETURN n LIMIT 0
+Schema:
+{schema}
+Note: Do not include any explanations or apologies in your responses.
+Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
+Do not include any text except the generated Cypher statement.
+
+Question: {question}`);
+
         const graphChain = GraphCypherQAChain.fromLLM({
           llm: graphLlm,
           graph: graph,
+          cypherPrompt
         });
         const graphRes = await graphChain.invoke({ query: standaloneQuery });
         graphFacts = graphRes.result;
