@@ -59,7 +59,7 @@
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/KunalNib/Rag-Chatbot.git ReTriVo
+git clone https://github.com/KunalNib/ReTriVo.git ReTriVo
 cd ReTriVo
 ```
 
